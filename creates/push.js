@@ -53,12 +53,6 @@ module.exports = {
         label: 'Cloud V2 Organization ID'
       },
       {
-        key: 'apiKey',
-        required: true,
-        type: 'string',
-        label: 'Push API key'
-      },
-      {
         key: 'platform',
         required: true,
         choices: { 'pushdev.cloud.coveo.com': 'dev', 'pushqa.cloud.coveo.com': 'qa', 'push.cloud.coveo.com': 'prod' },
@@ -92,8 +86,7 @@ module.exports = {
         },
         headers: {
           'Accept': 'application/json',
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${bundle.inputData.apiKey}`
+          'Content-Type': 'application/json'
         }
       });
 
