@@ -1,3 +1,6 @@
+process.env.CLIENT_ID = process.env.CLIENT_ID;
+process.env.CLIENT_SECRET = process.env.CLIENT_SECRE;
+
 const push = require('./creates/push');
 const authentication = require('./authentication');
 

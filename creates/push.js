@@ -44,25 +44,19 @@ module.exports = {
         key: 'sourceId',
         required: true,
         type: 'string',
-        label: 'Source ID'
+        label: 'Source ID (Platform dev only)'
       },
       {
         key: 'orgId',
         required: true,
         type: 'string',
-        label: 'Cloud V2 Organization ID'
-      },
-      {
-        key: 'platform',
-        required: true,
-        choices: { 'pushdev.cloud.coveo.com': 'dev', 'pushqa.cloud.coveo.com': 'qa', 'push.cloud.coveo.com': 'prod' },
-        helpText: 'The platform in which your org lives in'
+        label: 'Cloud V2 Organization ID (Platform dev only)'
       }
     ],
     //Action function
     perform: (z, bundle) => {
       let compressed = ""
-      if(bundle.inputData.binaryData){
+      if (bundle.inputData.binaryData) {
         compressed = base64.encode(pako.deflate(bundle.inputData.binaryData, { to: 'string' }));
       }
       let jsonToSend = {
@@ -78,7 +72,7 @@ module.exports = {
         }
       }
       let promise = z.request({
-        url: `https://${bundle.inputData.platform}/v1/organizations/${bundle.inputData.orgId}/sources/${bundle.inputData.sourceId}/documents`,
+        url: `https://pushdev.cloud.coveo.com/v1/organizations/${bundle.inputData.orgId}/sources/${bundle.inputData.sourceId}/documents`,
         method: 'PUT',
         body: JSON.stringify(jsonToSend),
         params: {
@@ -91,7 +85,10 @@ module.exports = {
       });
 
       return promise.then(response => {
-        if (response.content !== 'null') {
+        if (response.status === 401) {
+          throw new ExpiredAuthError('Refresh your auth');
+        }
+        else if (response.content !== 'null') {
           throw new z.errors.HaltedError(z.JSON.stringify(response.content));
         }
         return { key: response.content };

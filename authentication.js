@@ -1,20 +1,23 @@
+const base64 = require('base-64');
+
 const getAccessToken = (z, bundle) => {
-	const promise = z.request(`https://${bundle.inputData.platform}/oauth/token`, {
+	const promise = z.request(`https://platformdev.cloud.coveo.com/oauth/token`, {
 		method: 'POST',
 		body: {
 			code: bundle.inputData.code,
-			grant_type: 'authorization_code'
+			grant_type: 'authorization_code',
+			redirect_uri: bundle.inputData.redirect_uri
 		},
 		headers: {
 			'content-type': 'application/x-www-form-urlencoded',
-			//'Authorization': `Basic ${_zapier.event.token}`
+			'Authorization': `Basic ${base64.encode(process.env.CLIENT_ID + ':' + process.env.CLIENT_S)}`
 		}
 	});
 
 	// Needs to return at minimum, `access_token`, and if your app also does refresh, then `refresh_token` too
 	return promise.then((response) => {
 		if (response.status !== 200) {
-			throw new Error('Unable to fetch access token: ' + z.JSON.stringify(response) + 'QWERTY' + z.JSON.stringify(bundle));
+			throw new Error('Unable to fetch access token: ' + z.JSON.stringify(response.content) + " ASD " + base64.encode(process.env.CLIENT_ID + ':' + process.env.CLIENT_S));
 		}
 
 		const result = JSON.parse(response.content);
@@ -25,11 +28,11 @@ const getAccessToken = (z, bundle) => {
 	});
 };
 
-const testAuth = (z , bundle) => {
+const testAuth = (z, bundle) => {
 	// Normally you want to make a request to an endpoint that is either specifically designed to test auth, or one that
 	// every user will have access to, such as an account or profile endpoint like /me.
 	const promise = z.request({
-		url: `${bundle.inputData.platform}/rest/oauth2clients/Swagger`,
+		url: `https://platformdev.cloud.coveo.com/rest/templates/apikeys`,
 	});
 
 	// This method can return any truthy value to indicate the credentials are valid.
@@ -49,11 +52,11 @@ module.exports = {
 		// Zapier generates the state and redirect_uri, you are responsible for providing the rest.
 		// Note: can also be a function that returns a string
 		authorizeUrl: {
-			url: 'https://{{bundle.inputData.platform}}/oauth/authorize',
+			url: 'https://platformdev.cloud.coveo.com/oauth/authorize',
 			params: {
-				client_id: 'Swagger',
+				client_id: '{{process.env.CLIENT_ID}}',
 				redirect_uri: '{{bundle.inputData.redirect_uri}}',
-				response_type: 'token',
+				response_type: 'code',
 				realm: 'Platform',
 				scope: 'full'
 			}
@@ -66,14 +69,6 @@ module.exports = {
 		// Will get passed along to the authorizeUrl
 		// scope: 'read,write'
 	},
-	fields: [
-		{
-			key: 'platform',
-			required: true,
-			choices: { 'platformdev.cloud.coveo.com': 'dev', 'platformqa.cloud.coveo.com': 'qa', 'platform.cloud.coveo.com': 'prod' },
-			helpText: 'The platform in which your org lives in'
-		}
-	],
 	// The test method allows Zapier to verify that the access token is valid. We'll execute this
 	// method after the OAuth flow is complete to ensure everything is setup properly.
 	test: testAuth
