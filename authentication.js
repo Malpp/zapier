@@ -17,7 +17,7 @@ const getAccessToken = (z, bundle) => {
 	// Needs to return at minimum, `access_token`, and if your app also does refresh, then `refresh_token` too
 	return promise.then((response) => {
 		if (response.status !== 200) {
-			throw new Error('Unable to fetch access token: ' + z.JSON.stringify(response.content) + " ASD " + base64.encode(process.env.CLIENT_ID + ':' + process.env.CLIENT_S));
+			throw new Error('Unable to fetch access token: ' + z.JSON.stringify(response.content));
 		}
 
 		const result = JSON.parse(response.content);
